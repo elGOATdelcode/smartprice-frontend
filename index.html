@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartPrice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>SmartPrice</h1>
+    <!-- Registro y Login -->
+    <div class="auth-container">
+      <div id="registroForm">
+        <h3>Registro</h3>
+        <input type="text" id="regNombreUsuario" placeholder="Nombre de Usuario">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regContrasena" placeholder="Contraseña">
+        <button onclick="registrarUsuario()">Registrarse</button>
+        <p>¿Ya tienes una cuenta? <a href="#" onclick="mostrarLogin()">Inicia Sesión</a></p>
+      </div>
+      <div id="loginForm" style="display: none;">
+        <h3>Iniciar Sesión</h3>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginContrasena" placeholder="Contraseña">
+        <button onclick="iniciarSesion()">Iniciar Sesión</button>
+        <p>¿No tienes una cuenta? <a href="#" onclick="mostrarRegistro()">Regístrate</a></p>
+      </div>
+    </div>
+    <!-- Aplicación Principal (Visible tras autenticar) -->
+    <div id="app" style="display: none;">
+      <!-- Formulario de Búsqueda -->
+      <div class="form-container">
+        <h3>Buscar Producto</h3>
+        <input type="text" id="productName" placeholder="Ingresa el nombre del producto" oninput="mostrarSugerencias()">
+        <div id="autocompleteSuggestions" class="autocomplete-suggestions" style="display: none;"></div>
+        <button onclick="buscarProducto()">Buscar</button>
+      </div>
+      <!-- Detalles del Producto -->
+      <div class="product-details" id="productDetails" style="display: none;">
+        <h3>Detalles del Producto</h3>
+        <p><strong>Nombre:</strong> <span id="productDisplayName"></span></p>
+        <p><strong>Precio (Chedraui):</strong> $<span id="productDisplayPriceChedraui"></span></p>
+        <p><strong>Precio (Heb):</strong> $<span id="productDisplayPriceHeb"></span></p>
+        <p><strong>Código:</strong> <span id="productDisplayCode"></span></p>
+        <label for="quantity">Cantidad:</label>
+        <input type="number" id="quantity" value="1" min="1">
+        <button onclick="agregarAlCarrito()">Agregar al Carrito</button>
+      </div>
+      <!-- Lista de Compras -->
+      <div>
+        <h3>Mi Lista de Compras</h3>
+        <ul id="shoppingList" class="product-details">
+          <!-- Los ítems se agregan dinámicamente -->
+        </ul>
+        <button id="compareButton" onclick="compararPrecios()" disabled>Comparar Precios</button>
+      </div>
+      <!-- Resultados de Comparación -->
+      <div id="comparisonResults" style="display: none;">
+        <div id="recommendationMessage"></div>
+        <!-- Contenedores de Tablas -->
+        <div id="chedrauiTableContainer" style="display: block;">
+          <h3>Lista de Compras en Chedraui</h3>
+          <table id="chedrauiTable">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="chedrauiTableBody">
+              <!-- Los ítems se muestran aquí -->
+            </tbody>
+          </table>
+          <div id="chedrauiTotal"></div>
+        </div>
+        <div id="hebTableContainer" style="display: none;">
+          <h3>Lista de Compras en Heb</h3>
+          <table id="hebTable">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="hebTableBody">
+              <!-- Los ítems se muestran aquí -->
+            </tbody>
+          </table>
+          <div id="hebTotal"></div>
+        </div>
+        <!-- Botones de Navegación -->
+        <button class="nav-button" onclick="mostrarTablaAnterior()">&lt;</button>
+        <button class="nav-button" onclick="mostrarTablaSiguiente()">&gt;</button>
+      </div>
+    
+      <div>
+        <h3>Mis Listas</h3>
+        <ul id="savedLists">
+    
+        </ul>
+        <button onclick="mostrarDialogoGuardarLista()">Guardar Lista Actual</button>
+      </div>
+      <!-- Diálogo para Guardar Lista -->
+      <div id="saveListDialog" style="display: none;">
+        <h3>Guardar Lista</h3>
+        <input type="text" id="listName" placeholder="Nombre de la Lista">
+        <button onclick="guardarLista()">Guardar</button>
+        <button onclick="ocultarDialogoGuardarLista()">Cancelar</button>
+      </div>
+     
+      <div>
+        <button onclick="cerrarSesion()">Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

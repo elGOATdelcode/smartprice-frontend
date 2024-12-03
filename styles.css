@@ -1,0 +1,145 @@
+/* Estilos CSS */
+body {
+    font-family: 'Open Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+    color: #333;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+  }
+  h1 {
+    text-align: center;
+    color: #212529;
+  }
+  .auth-container, .form-container, .product-details {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+  }
+  input, button {
+    padding: 10px;
+    margin: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+  }
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #shoppingList, #savedLists {
+    list-style: none;
+    padding: 0;
+  }
+  #shoppingList li, #savedLists li {
+    padding: 10px;
+    background-color: #e9ecef;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #shoppingList li:hover, #savedLists li:hover {
+    background-color: #d3d3d3;
+  }
+  #comparisonResults {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    display: none;
+  }
+  .autocomplete-suggestions {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+    z-index: 10;
+    margin-top: 2px;
+    border-radius: 4px;
+  }
+  .autocomplete-suggestion {
+    padding: 10px;
+    cursor: pointer;
+  }
+  .autocomplete-suggestion:hover {
+    background-color: #f0f0f0;
+  }
+  table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+  }
+  table, th, td {
+    border: 1px solid #ccc;
+  }
+  th, td {
+    padding: 12px;
+    text-align: center;
+  }
+  .total-row {
+    font-weight: bold;
+    background-color: #f0f0f0;
+  }
+  .delete-icon {
+    cursor: pointer;
+    color: red;
+    font-size: 18px;
+  }
+  .nav-button {
+    padding: 10px 20px;
+    margin: 10px 5px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .nav-button:hover {
+    background-color: #5a6268;
+  }
+  #saveListDialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+  }
+  .auth-container {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .auth-container a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  .auth-container a:hover {
+    text-decoration: underline;
+  }
+  
