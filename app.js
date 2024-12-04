@@ -28,7 +28,7 @@ async function registrarUsuario() {
   }
 
   try {
-    const response = await fetch('https://smartprice-backend-production.up.railway.app/api/usuarios/registro', {
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/usuarios/registro', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre_usuario, email, contrasena })
@@ -59,7 +59,7 @@ async function iniciarSesion() {
   }
 
   try {
-    const response = await fetch('https://smartprice-backend-production.up.railway.app/api/usuarios/login', {
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/usuarios/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json','Access-Control-Allow-Origin':'https://elgoatdelcode.github.io/' },
       body: JSON.stringify({ email, contrasena })
@@ -110,7 +110,7 @@ let sugerenciasActuales = [];
 // Obtener datos de productos desde el backend
 async function obtenerProductos() {
   try {
-    const response = await fetch('https://smartprice-backend-production.up.railway.app/api/productos');
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/productos');
     productos = await response.json();
   } catch (error) {
     console.error('Error al cargar los productos:', error);
@@ -329,7 +329,7 @@ async function guardarLista() {
     return;
   }
   try {
-    const response = await fetch('https://smartprice-backend-production.up.railway.app/api/listas', {
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/listas', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -345,7 +345,7 @@ async function guardarLista() {
       for (const item of listaActual) {
         const producto = productos.find(p => p.nombre === item.nombre);
         if (producto) {
-          await fetch('https://smartprice-backend-production.up.railway.app/api/items', {
+          await fetch('https://smartprice-backend-1.onrender.com/api/items', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -379,7 +379,7 @@ function ocultarDialogoGuardarLista() {
 
 async function cargarListasGuardadas() {
   try {
-    const response = await fetch('https://smartprice-backend-production.up.railway.app/api/listas', {
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/listas', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const listas = await response.json();
@@ -399,7 +399,7 @@ async function cargarListasGuardadas() {
 // Cargar una lista guardada
 async function cargarLista(idLista) {
   try {
-    const response = await fetch(`https://smartprice-backend-production.up.railway.app/api/items/${idLista}`, {
+    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/items/${idLista}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const items = await response.json();
