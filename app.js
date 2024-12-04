@@ -61,7 +61,7 @@ async function iniciarSesion() {
   try {
     const response = await fetch('https://smartprice-backend-production.up.railway.app/api/usuarios/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json','Access-Control-Allow-Origin':'https://elgoatdelcode.github.io' },
+      headers: { 'Content-Type': 'application/json','Access-Control-Allow-Origin':'https://elgoatdelcode.github.io/' },
       body: JSON.stringify({ email, contrasena })
     });
 
