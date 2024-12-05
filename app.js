@@ -189,6 +189,7 @@ function agregarAlCarrito() {
   document.getElementById('productDetails').style.display = 'none';
   document.getElementById('productName').value = '';
   habilitarBotonComparar();
+  ocultarResultadosComparacion();
 }
 
 // Mostrar lista de compras
@@ -388,12 +389,33 @@ async function cargarListasGuardadas() {
     for (const lista of listas) {
       const li = document.createElement('li');
       li.textContent = lista.nombre;
+      const iconoEliminar = document.createElement('span');
+    iconoEliminar.classList.add('delete-icon');
+    iconoEliminar.textContent = '🗑️';
+    li.appendChild(iconoEliminar);
+    iconoEliminar.onclick = () => eliminarLista(lista.id);
       li.onclick = () => cargarLista(lista.id);
       elementoListasGuardadas.appendChild(li);
     }
   } catch (error) {
     console.error('Error al cargar las listas:', error);
   }
+}
+
+async function eliminarLista(idLista){
+  try {
+    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/listas/${idLista}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      method:'DELETE' 
+      
+    })
+    
+    cargarListasGuardadas()
+  
+  } catch (error) {
+    console.error('Error al intentar eliminar la lista:', error);
+  }
+  
 }
 
 // Cargar una lista guardada
@@ -425,12 +447,14 @@ function ocultarResultadosComparacion() {
   document.getElementById('comparisonResults').style.display = 'none';
 }
 
-
+//
 function eliminarItemDeLista(indice) {
   listaActual.splice(indice, 1);
   mostrarLista();
   habilitarBotonComparar();
 }
+
+
 
 
 function guardarEnLocalStorage() {
