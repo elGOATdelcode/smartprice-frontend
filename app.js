@@ -1,22 +1,22 @@
-
 let token = '';
 let listaActual = [];
 let listasGuardadas = {};
 let tablaActual = 'chedraui';
+let currentListId = null; 
 
-// Mostrar formulario de registro
+
 function mostrarRegistro() {
   document.getElementById('registroForm').style.display = 'block';
   document.getElementById('loginForm').style.display = 'none';
 }
 
-// Mostrar formulario de login
+
 function mostrarLogin() {
   document.getElementById('registroForm').style.display = 'none';
   document.getElementById('loginForm').style.display = 'block';
 }
 
-// Registrar usuario
+
 async function registrarUsuario() {
   const nombre_usuario = document.getElementById('regNombreUsuario').value.trim();
   const email = document.getElementById('regEmail').value.trim();
@@ -48,7 +48,6 @@ async function registrarUsuario() {
   }
 }
 
-// Iniciar sesión
 async function iniciarSesion() {
   const email = document.getElementById('loginEmail').value.trim();
   const contrasena = document.getElementById('loginContrasena').value;
@@ -80,11 +79,12 @@ async function iniciarSesion() {
   }
 }
 
-
 function mostrarAplicacion() {
   document.querySelector('.auth-container').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   cargarListasGuardadas();
+  resetearListaActual();
+ 
 }
 
 // Cargar token al iniciar
@@ -92,9 +92,10 @@ window.onload = function() {
   token = localStorage.getItem('token');
   if (token) {
     mostrarAplicacion();
+    obtenerProductos();
+    
   }
 };
-
 
 function cerrarSesion() {
   token = '';
@@ -102,7 +103,6 @@ function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
   document.querySelector('.auth-container').style.display = 'block';
 }
-
 
 let productos = [];
 let sugerenciasActuales = [];
@@ -116,7 +116,8 @@ async function obtenerProductos() {
     console.error('Error al cargar los productos:', error);
   }
 }
-//autocompletado
+
+// Autocompletado
 function mostrarSugerencias() {
   const input = document.getElementById('productName').value.toLowerCase();
   const contenedorSugerencias = document.getElementById('autocompleteSuggestions');
@@ -148,12 +149,10 @@ function mostrarSugerencias() {
   }
 }
 
-
 function seleccionarSugerencia(producto) {
   document.getElementById('productName').value = producto.nombre;
   document.getElementById('autocompleteSuggestions').style.display = 'none';
 }
-
 
 function buscarProducto() {
   const nombreProducto = document.getElementById('productName').value.toLowerCase();
@@ -170,46 +169,90 @@ function buscarProducto() {
   }
 }
 
+async function agregarAlCarrito() {
+  if (!currentListId) {
+    alert('Por favor, selecciona una lista para agregar productos.');
+    return;
+  }
 
-function agregarAlCarrito() {
   const nombreProducto = document.getElementById('productDisplayName').textContent;
   const precioChedraui = parseFloat(document.getElementById('productDisplayPriceChedraui').textContent);
   const precioHeb = parseFloat(document.getElementById('productDisplayPriceHeb').textContent);
   const cantidad = parseInt(document.getElementById('quantity').value);
-  const itemCarrito = {
-    nombre: nombreProducto,
-    precioChedraui: precioChedraui,
-    cantidad: cantidad,
-    totalChedraui: precioChedraui * cantidad,
-    precioHeb: precioHeb,
-    totalHeb: precioHeb * cantidad
-  };
-  listaActual.push(itemCarrito);
-  mostrarLista();
-  document.getElementById('productDetails').style.display = 'none';
-  document.getElementById('productName').value = '';
-  habilitarBotonComparar();
-  ocultarResultadosComparacion();
+  
+  if (cantidad < 1) {
+    alert('La cantidad debe ser al menos 1');
+    return;
+  }
+
+  const producto = productos.find(p => p.nombre === nombreProducto);
+  if (!producto) {
+    alert('Producto no encontrado en la base de datos.');
+    return;
+  }
+
+  try {
+    // Agregar el item al backend
+    const response = await fetch('https://smartprice-backend-1.onrender.com/api/items', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ lista_id: currentListId, producto_id: producto.id, cantidad: cantidad })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Actualizar la lista actual en el frontend
+      const itemExistente = listaActual.find(item => item.nombre === nombreProducto);
+      if (itemExistente) {
+        itemExistente.cantidad += cantidad;
+        itemExistente.totalChedraui = itemExistente.precioChedraui * itemExistente.cantidad;
+        itemExistente.totalHeb = itemExistente.precioHeb * itemExistente.cantidad;
+      } else {
+        const itemCarrito = {
+          id: data.itemId, // ID del item en el backend
+          nombre: nombreProducto,
+          precioChedraui: precioChedraui,
+          cantidad: cantidad,
+          totalChedraui: precioChedraui * cantidad,
+          precioHeb: precioHeb,
+          totalHeb: precioHeb * cantidad
+        };
+        listaActual.push(itemCarrito);
+      }
+      
+      mostrarLista();
+      document.getElementById('productDetails').style.display = 'none';
+      document.getElementById('productName').value = '';
+      habilitarBotonComparar();
+      ocultarResultadosComparacion();
+    } else {
+      alert(data.mensaje);
+    }
+  } catch (error) {
+    console.error('Error al agregar al carrito:', error);
+    alert('Error al agregar el producto al carrito');
+  }
 }
 
-// Mostrar lista de compras
+
 function mostrarLista() {
   const listaElement = document.getElementById('shoppingList');
   listaElement.innerHTML = '';
   listaActual.forEach((item, indice) => {
     const li = document.createElement('li');
-    li.textContent = `${item.nombre} (Cantidad: ${item.cantidad})`;
-    li.setAttribute('data-index', indice);
-    const iconoEliminar = document.createElement('span');
-    iconoEliminar.classList.add('delete-icon');
-    iconoEliminar.textContent = '🗑️';
-    iconoEliminar.onclick = () => eliminarItemDeLista(indice);
-    li.appendChild(iconoEliminar);
+    li.innerHTML = `
+      ${item.nombre} (Cantidad: ${item.cantidad})
+      <span class="delete-icon" onclick="eliminarItemDeLista(${item.id})">🗑️</span>
+    `;
     listaElement.appendChild(li);
   });
 }
 
-// Habilitar botón de comparar precios
+
 function habilitarBotonComparar() {
   const botonComparar = document.getElementById('compareButton');
   if (listaActual.length > 0) {
@@ -219,7 +262,7 @@ function habilitarBotonComparar() {
   }
 }
 
-// Generar tabla para Chedraui
+
 function generarTablaChedraui() {
   const cuerpoTabla = document.getElementById('chedrauiTableBody');
   cuerpoTabla.innerHTML = '';
@@ -239,7 +282,7 @@ function generarTablaChedraui() {
   return total;
 }
 
-// Generar tabla para Heb
+
 function generarTablaHeb() {
   const cuerpoTabla = document.getElementById('hebTableBody');
   cuerpoTabla.innerHTML = '';
@@ -277,14 +320,13 @@ function compararPrecios() {
 
   document.getElementById('recommendationMessage').innerHTML = mensajeRecomendacion;
 
-  // Mostrar resultados de comparación
+
   const resultadosComparacion = document.getElementById('comparisonResults');
   resultadosComparacion.style.display = 'block';
 
   // Inicializar la visualización de tablas
   mostrarTablaChedraui();
 }
-
 
 function mostrarTablaAnterior() {
   if (tablaActual === 'heb') {
@@ -294,7 +336,6 @@ function mostrarTablaAnterior() {
   }
 }
 
-
 function mostrarTablaSiguiente() {
   if (tablaActual === 'chedraui') {
     document.getElementById('chedrauiTableContainer').style.display = 'none';
@@ -303,13 +344,11 @@ function mostrarTablaSiguiente() {
   }
 }
 
-
 function mostrarTablaChedraui() {
   document.getElementById('chedrauiTableContainer').style.display = 'block';
   document.getElementById('hebTableContainer').style.display = 'none';
   tablaActual = 'chedraui';
 }
-
 
 function mostrarTablaHeb() {
   document.getElementById('chedrauiTableContainer').style.display = 'none';
@@ -320,15 +359,18 @@ function mostrarTablaHeb() {
 
 function mostrarDialogoGuardarLista() {
   document.getElementById('saveListDialog').style.display = 'block';
+  document.getElementById('saveListDialogTitle').textContent = 'Guardar Nueva Lista';
+  document.getElementById('listName').value = '';
 }
 
-// Guardar la lista 
+// Guardar la lista (crear nueva)
 async function guardarLista() {
   const nombreLista = document.getElementById('listName').value.trim();
   if (nombreLista === '') {
     alert('Por favor, ingresa un nombre para la lista.');
     return;
   }
+
   try {
     const response = await fetch('https://smartprice-backend-1.onrender.com/api/listas', {
       method: 'POST',
@@ -342,30 +384,16 @@ async function guardarLista() {
     const data = await response.json();
 
     if (response.ok) {
-      // Guardar los items en la lista
-      for (const item of listaActual) {
-        const producto = productos.find(p => p.nombre === item.nombre);
-        if (producto) {
-          await fetch('https://smartprice-backend-1.onrender.com/api/items', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ lista_id: data.listaId, producto_id: producto.id, cantidad: item.cantidad })
-          });
-        }
-      }
-      alert('Lista guardada exitosamente');
+      currentListId = data.listaId;
+      document.getElementById('currentListName').textContent = nombreLista;
+      alert('Lista creada exitosamente. Ahora puedes agregar productos a la lista.');
       ocultarDialogoGuardarLista();
-      listaActual = [];
-      mostrarLista();
-      habilitarBotonComparar();
       cargarListasGuardadas();
-      ocultarResultadosComparacion();
     } else {
       alert(data.mensaje);
     }
+    listaActual=[];
+    mostrarLista();
   } catch (error) {
     console.error('Error:', error);
     alert('Error al guardar la lista');
@@ -373,8 +401,70 @@ async function guardarLista() {
 }
 
 
-function ocultarDialogoGuardarLista() {
-  document.getElementById('saveListDialog').style.display = 'none';
+async function editarNombreLista(idLista, nuevoNombre) {
+  if (!nuevoNombre) {
+    alert('El nombre de la lista no puede estar vacío.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/listas/${idLista}`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ nombre: nuevoNombre })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Nombre de la lista actualizado exitosamente.');
+      cargarListasGuardadas();
+      if (currentListId === idLista) {
+        document.getElementById('currentListName').textContent = nuevoNombre;
+      }
+    } else {
+      alert(data.mensaje);
+    }
+  } catch (error) {
+    console.error('Error al editar el nombre de la lista:', error);
+    alert('Error al editar el nombre de la lista');
+  }
+}
+
+
+async function eliminarLista(idLista){
+  if (!confirm('¿Estás seguro de que deseas eliminar esta lista?')) return;
+
+  try {
+    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/listas/${idLista}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      method:'DELETE' 
+    });
+    
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Lista eliminada exitosamente');
+      cargarListasGuardadas();
+      // Si la lista eliminada es la actual, limpiar la vista
+      if (currentListId === idLista) {
+        currentListId = null;
+        listaActual = [];
+        mostrarLista();
+        document.getElementById('currentListName').textContent = 'Mi Lista de Compras';
+        habilitarBotonComparar();
+        ocultarResultadosComparacion();
+      }
+    } else {
+      alert(data.mensaje);
+    }
+  } catch (error) {
+    console.error('Error al intentar eliminar la lista:', error);
+    alert('Error al eliminar la lista');
+  }
 }
 
 
@@ -388,44 +478,65 @@ async function cargarListasGuardadas() {
     elementoListasGuardadas.innerHTML = '';
     for (const lista of listas) {
       const li = document.createElement('li');
-      li.textContent = lista.nombre;
+      
+      // Crear un contenedor para el nombre y los iconos
+      const nombreContainer = document.createElement('span');
+      nombreContainer.textContent = lista.nombre;
+      
+      // Crear contenedor para los iconos
+      const iconosContainer = document.createElement('div');
+      iconosContainer.classList.add('iconos-container');
+      
+      // Icono de Editar
+      const iconoEditar = document.createElement('span');
+      iconoEditar.classList.add('edit-icon');
+      iconoEditar.textContent = '✏️';
+      iconoEditar.onclick = (e) => {
+        e.stopPropagation();
+        const nuevoNombre = prompt('Ingresa el nuevo nombre de la lista:', lista.nombre);
+        if (nuevoNombre !== null && nuevoNombre.trim() !== '') { // Validar que no esté vacío
+          editarNombreLista(lista.id, nuevoNombre.trim());
+        }
+      };
+      
+      // Icono de Eliminar
       const iconoEliminar = document.createElement('span');
-    iconoEliminar.classList.add('delete-icon');
-    iconoEliminar.textContent = '🗑️';
-    li.appendChild(iconoEliminar);
-    iconoEliminar.onclick = () => eliminarLista(lista.id);
-      li.onclick = () => cargarLista(lista.id);
+      iconoEliminar.classList.add('delete-icon');
+      iconoEliminar.textContent = '🗑️';
+      iconoEliminar.onclick = (e) => {
+        e.stopPropagation();
+        eliminarLista(lista.id);
+      };
+      
+      // Agregar iconos al contenedor de iconos
+      iconosContainer.appendChild(iconoEditar);
+      iconosContainer.appendChild(iconoEliminar);
+      
+      
+      li.appendChild(nombreContainer);
+      li.appendChild(iconosContainer);
+      
+      
+      li.onclick = () => cargarLista(lista.id, lista.nombre);
+      
+      // Agregar el elemento li a la lista de listas guardadas
       elementoListasGuardadas.appendChild(li);
     }
   } catch (error) {
     console.error('Error al cargar las listas:', error);
+    alert('Error al cargar las listas');
   }
 }
 
-async function eliminarLista(idLista){
-  try {
-    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/listas/${idLista}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-      method:'DELETE' 
-      
-    })
-    
-    cargarListasGuardadas()
-  
-  } catch (error) {
-    console.error('Error al intentar eliminar la lista:', error);
-  }
-  
-}
 
-// Cargar una lista guardada
-async function cargarLista(idLista) {
+async function cargarLista(idLista, nombreLista) {
   try {
     const response = await fetch(`https://smartprice-backend-1.onrender.com/api/items/${idLista}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const items = await response.json();
     listaActual = items.map(item => ({
+      id: item.id, // ID del item en el backend
       nombre: item.nombre,
       precioChedraui: parseFloat(item.precio_chedraui),
       precioHeb: parseFloat(item.precio_heb),
@@ -436,6 +547,8 @@ async function cargarLista(idLista) {
     mostrarLista();
     habilitarBotonComparar();
     ocultarResultadosComparacion();
+    currentListId = idLista;
+    document.getElementById('currentListName').textContent = nombreLista;
   } catch (error) {
     console.error('Error al cargar la lista:', error);
     alert('Error al cargar la lista');
@@ -443,23 +556,77 @@ async function cargarLista(idLista) {
 }
 
 
+async function eliminarItemDeLista(idItem) {
+  if (!currentListId) {
+    alert('No hay una lista seleccionada.');
+    return;
+  }
+
+  if (!confirm('¿Estás seguro de que deseas eliminar este producto de la lista?')) return;
+
+  try {
+    const response = await fetch(`https://smartprice-backend-1.onrender.com/api/items/${idItem}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      method: 'DELETE'
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Actualizar la listaActual en el frontend
+      listaActual = listaActual.filter(item => item.id !== idItem);
+      mostrarLista();
+      habilitarBotonComparar();
+      ocultarResultadosComparacion();
+    } else {
+      alert(data.mensaje);
+    }
+  } catch (error) {
+    console.error('Error al eliminar el item:', error);
+    alert('Error al eliminar el producto de la lista');
+  }
+}
+
+// Comparar precios y mostrar recomendación
+function compararPrecios() {
+  const totalChedraui = generarTablaChedraui();
+  const totalHeb = generarTablaHeb();
+
+  let mensajeRecomendacion = '';
+  if (totalChedraui < totalHeb) {
+    const ahorro = (totalHeb - totalChedraui).toFixed(2);
+    mensajeRecomendacion = `Recomendamos comprar en Chedraui. Ahorrará $${ahorro}.`;
+  } else if (totalHeb < totalChedraui) {
+    const ahorro = (totalChedraui - totalHeb).toFixed(2);
+    mensajeRecomendacion = `Recomendamos comprar en Heb. Ahorrará $${ahorro}.`;
+  } else {
+    mensajeRecomendacion = `Ambos supermercados tienen el mismo costo total.`;
+  }
+
+  document.getElementById('recommendationMessage').innerHTML = mensajeRecomendacion;
+
+  
+  const resultadosComparacion = document.getElementById('comparisonResults');
+  resultadosComparacion.style.display = 'block';
+
+  // Inicializar la visualización de tablas
+  mostrarTablaChedraui();
+}
+
+
 function ocultarResultadosComparacion() {
   document.getElementById('comparisonResults').style.display = 'none';
 }
 
-//
-function eliminarItemDeLista(indice) {
-  listaActual.splice(indice, 1);
+
+function ocultarDialogoGuardarLista() {
+  document.getElementById('saveListDialog').style.display = 'none';
+}
+
+
+function resetearListaActual() {
+  listaActual = [];
   mostrarLista();
   habilitarBotonComparar();
+  ocultarResultadosComparacion();
 }
-
-
-
-
-function guardarEnLocalStorage() {
-  localStorage.setItem('listasGuardadas', JSON.stringify(listasGuardadas));
-}
-
-// Obtener datos al cargar
-obtenerProductos();

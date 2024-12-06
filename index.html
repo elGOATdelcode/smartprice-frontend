@@ -49,7 +49,7 @@
       </div>
       <!-- Lista de Compras -->
       <div>
-        <h3>Mi Lista de Compras</h3>
+        <h3 id="currentListName">Mi Lista de Compras</h3>
         <ul id="shoppingList" class="product-details">
           <!-- Los ítems se agregan dinámicamente -->
         </ul>
@@ -97,22 +97,29 @@
         <button class="nav-button" onclick="mostrarTablaAnterior()">&lt;</button>
         <button class="nav-button" onclick="mostrarTablaSiguiente()">&gt;</button>
       </div>
-    
+      <!-- Gestión de Listas -->
       <div>
         <h3>Mis Listas</h3>
         <ul id="savedLists">
-    
+          <!-- Las listas guardadas se agregan dinámicamente -->
         </ul>
-        <button onclick="mostrarDialogoGuardarLista()">Guardar Lista Actual</button>
+        <button onclick="mostrarDialogoGuardarLista()">Agregar Nueva Lista</button>
       </div>
       <!-- Diálogo para Guardar Lista -->
-      <div id="saveListDialog" style="display: none;">
-        <h3>Guardar Lista</h3>
-        <input type="text" id="listName" placeholder="Nombre de la Lista">
-        <button onclick="guardarLista()">Guardar</button>
-        <button onclick="ocultarDialogoGuardarLista()">Cancelar</button>
+      <div id="saveListDialog" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3 id="saveListDialogTitle">Guardar Lista</h3>
+          <input type="text" id="listName" placeholder="Nombre de la Lista">
+          <button onclick="guardarLista()">Guardar</button>
+          <button onclick="ocultarDialogoGuardarLista()">Cancelar</button>
+        </div>
       </div>
-     
+      <!-- Botón de Guardar Cambios al Editar -->
+      <div id="editSection" style="display: none;">
+        <h3>Editando Lista: <span id="editingListName"></span></h3>
+        <button onclick="guardarCambios()">Guardar Cambios</button>
+        <button onclick="cancelarEdicion()">Cancelar Edición</button>
+      </div>
       <div>
         <button onclick="cerrarSesion()">Cerrar Sesión</button>
       </div>
@@ -121,3 +128,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
